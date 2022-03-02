@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "contracts:compile:abi": "typechain --target web3-v1 --out-dir abis/types \"./abis/**/*.json\"",
     "contracts:compile": "npm run contracts:compile:abi",
-    "postinstall": "npm run contracts:compile",
+    "postiinstalll": "npm run contracts:compile",
     "build": "tsc"
   },
   "keywords": [],
