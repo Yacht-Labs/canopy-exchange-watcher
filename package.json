@@ -1,0 +1,23 @@
+{
+  "name": "canopy-exchange-watcher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "contracts:compile:abi": "typechain --target web3-v1 --out-dir abis/types \"./abis/**/*.json\"",
+    "contracts:compile": "npm run contracts:compile:abi",
+    "postinstall": "npm run contracts:compile",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "web3": "^1.7.0",
+    "web3-eth-contract": "^1.7.0"
+  }
+}
