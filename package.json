@@ -7,16 +7,19 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "contracts:compile:abi": "typechain --target web3-v1 --out-dir abis/types \"./abis/**/*.json\"",
     "contracts:compile": "npm run contracts:compile:abi",
-    "postiinstalll": "npm run contracts:compile",
     "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^17.0.21",
+    "ts-node": "^10.6.0",
     "typescript": "^4.7.0-dev.20220302"
   },
   "dependencies": {
+    "dotenv": "^16.0.0",
+    "mongoose": "^6.2.7",
     "web3": "^1.7.0",
     "web3-eth-contract": "^1.7.0"
   }

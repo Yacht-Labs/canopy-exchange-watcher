@@ -36,7 +36,8 @@ async function processDeposit(event) {
     let nonce = await web3Aurora.eth.getTransactionCount(auroraAccount.address);
     let to = event.returnValues.from;
     let amount = event.returnValues.amount;
-    let encodedABI = await mintContract.methods.mint(to, amount).encodeABI();
+    let encodedABI = mintContract.methods.mint(to, amount).encodeABI();
+    console.log(event);
     console.log("-");
     console.log(nonce);
     let signedTx = await auroraAccount.signTransaction({
