@@ -8,18 +8,20 @@ async function checkSchema() {
     await mongoose.connect(DATABASE_URL);
     console.log("connected")
 
-    const chainStatus = new ChainStatus({
-        watcherBlockHeight: 0,
-        minterBlockHeight: 0,
-        mintedBlockHeight: 0,
-    })
+    // const chainStatus = new ChainStatus({
+    //     watcherBlockHeight: 0,
+    //     minterBlockHeight: 0,
+    //     mintedBlockHeight: 0,
+    // })
 
-    await chainStatus.save(function (err) {
-        if (err) return;
-        console.log("saved")
-        // saved!
-    });
-    console.log("saved again")
+    let res = await ChainStatus.find()
+    console.log(res)
+    // await chainStatus.save(function (err) {
+    //     if (err) return;
+    //     console.log("saved")
+    //     // saved!
+    // });
+    // console.log("saved again")
 
     
       
