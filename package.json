@@ -4,10 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "contracts:compile:abi": "typechain --target web3-v1 --out-dir abis/types \"./abis/**/*.json\"",
-    "contracts:compile": "npm run contracts:compile:abi",
-    "build": "tsc"
+    "build": "tsc",
+    "launch": "tsc && node dist/main.js"
   },
   "keywords": [],
   "author": "",
