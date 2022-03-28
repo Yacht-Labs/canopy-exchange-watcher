@@ -15,7 +15,7 @@ BlockchainEventSchema.add({
   blockNumber: Number,
   logIndex: Number,
   removed: Boolean,
-  transactionHash: String,
+  txHash: String,
   transactionIndex: Number,
   id: String,
   from: String,
@@ -26,7 +26,7 @@ BlockchainEventSchema.add({
 
 const DepositEventSchema = new Schema();
 DepositEventSchema.add({
-  transactionHash: String,
+  txHash: String,
   status: {
     type: String,
     enum: ["NEW", "MINTING", "MINTED", "FAILED"],

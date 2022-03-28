@@ -10,19 +10,22 @@ async function checkSchema() {
 
 
   let res = await ChainStatus.find()
-  console.log(res)
+  console.log(res[0])
+  if (res[0]) {
+    console.log("found")
+  } else {
+    const chainStatus = new ChainStatus({
+        watcherBlockHeight: 25267204,
+        mintedBlockHeight: 25267204,
+        minterBlockHeight: 25267204,
+    })
+    await chainStatus.save(function (err) {
+        if (err) return;
+        // saved!
+    });
+    console.log("saved")
+  }
 
-  // const chainStatus = new ChainStatus({
-  //     watcherBlockHeight: 0,
-  //     minterBlockHeight: 0,
-  //     mintedBlockHeight: 0,
-  // })
-  // await chainStatus.save(function (err) {
-  //     if (err) return;
-  //     console.log("saved")
-  //     // saved!
-  // });
-  // console.log("saved again")
 
 
 
