@@ -27,9 +27,11 @@ BlockchainEventSchema.add({
 const DepositEventSchema = new Schema();
 DepositEventSchema.add({
   txHash: String,
+  mintTxHash: String,
+  failureReason: String,
   status: {
     type: String,
-    enum: ["NEW", "MINTING", "MINTED", "FAILED"],
+    enum: ["NEW", "MINTING", "MINTED", "DEPOSIT_FAILED", "MINT_FAILED"],
   },
   event: BlockchainEventSchema,
 });

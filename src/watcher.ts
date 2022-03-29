@@ -24,10 +24,14 @@ const watcher = async () => {
   let watcherLock = 0;
 
   async function lockWatcher(watcherBlockHeight) {
-    const blockNumber = await web3Polygon.eth.getBlockNumber()
-    if (watcherBlockHeight && watcherLock == 0 && blockNumber >= watcherBlockHeight + CHUNK_SIZE - 1) {
-      watcherLock = 1
-      return true
+    if (watcherBlockHeight && watcherLock == 0) {
+      const blockNumber = await web3Polygon.eth.getBlockNumber()
+      if (blockNumber >= watcherBlockHeight + CHUNK_SIZE - 1) {
+        watcherLock = 1
+        return true
+      } else {
+        return false
+      }
     } else {
       return false
     }
@@ -43,14 +47,14 @@ const watcher = async () => {
     }
     // TODO: Handle case where more than 10,000 events are created within 100 blocks
     let events = await vaultContract.getPastEvents('Deposit', {
-        fromBlock: cs.watcherBlockHeight,
-        toBlock: cs.watcherBlockHeight + CHUNK_SIZE - 1,
-      }, function(error, events){ if(error) console.log(error); }
+      fromBlock: cs.watcherBlockHeight,
+      toBlock: cs.watcherBlockHeight + CHUNK_SIZE - 1,
+    }, function (error, events) { if (error) console.log(error); }
     )
     let newRecordsCreated = false
 
     events.forEach(async event => {
-      let de = await DepositEvent.findOne( {txHash: event.transactionHash })
+      let de = await DepositEvent.findOne({ txHash: event.transactionHash })
       console.log(de)
       if (de) {
         console.log('found')
