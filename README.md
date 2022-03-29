@@ -11,3 +11,5 @@ You can also view the log file to see the current status of your mongod process:
 
 To begin using MongoDB, connect mongosh to the running instance. From a new terminal, issue the following:
 `mongosh`
+
+Copy `.env_local` to `.env` file

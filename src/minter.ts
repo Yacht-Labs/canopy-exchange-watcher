@@ -7,13 +7,13 @@ import 'dotenv/config'
 import { BlockchainEvent, ChainStatus, DepositEvent } from "./model";
 const { DATABASE_URL } = process.env
 const DEV_ACCOUNT_PRIVATE_KEY = "81c7e751ce18f0e39f8881e1d4071ff851d6825988742a0569941049d7a1df38";
+const DEV_ACCOUNT_ADDRESS = "0xc41df6bA129067291F61c7f3dBcad9227E3fba57";
 
 var web3Polygon = new Web3('wss://polygon-mumbai.g.alchemy.com/v2/dkKU4lXpEdN0xvwo4-fLyLMvBqB3MzK4');
 var web3Aurora = new Web3("wss://testnet.aurora.dev");
 
-let mintAccount = web3Aurora.eth.accounts.privateKeyToAccount(DEV_ACCOUNT_PRIVATE_KEY);
 let mintContract = new web3Aurora.eth.Contract(auroraMint.abi as AbiItem[], '0x8173cf5551eC2E96489427c4073476b7f33C2b5e')
-mintContract.defaultAccount = mintAccount.address
+
 const minter = async () => {
     let minterLock = 0;
     async function lockMinter() {
@@ -45,25 +45,47 @@ const minter = async () => {
                 return
             }
             // check for MintEvent on destination chain with DepositEvent.txHash
-            console.log("calling getPastEvents on contract")
+            console.log("calling getPastEvents on contract for tx: %s", event.txHash)
             let me = await mintContract.getPastEvents('Mint', {
                 filter: { txHash: event.txHash }
             })[0]
+            console.log("Me: %s", me);
             // call mint() contract on destination chain if MintEvent doesn't exist
             if (!me) {
-                await mintContract.methods.mintWithEvent.send({
-                    // TODO: use 'to' address from DepositEvent
-                    address: event.event.from,
-                    amount: event.event.amount,
-                    txHash: event.txHash
-                }).on('receipt', function (receipt) {
-                    console.log("minted")
-                    console.log(receipt)
-                    event.mintTxHash = receipt.transactionHash
-                    event.status = 'MINTING'
-                    event.save()
-                })
+                console.log("Starting mint");
+                const tx = {
+                    from: DEV_ACCOUNT_ADDRESS, 
+                    to: "0xBB7E929741621944e1D38cF1C8654D8cF34943fc", 
+                    data: mintContract.methods.mintWithEvent(event.event.from, event.event.amount, event.txHash).encodeABI() 
+                };
+                console.log("Tx: %s", tx);
+                const signedTx = await web3Aurora.eth.accounts.signTransaction(tx, DEV_ACCOUNT_PRIVATE_KEY, (err, res) => {
+                    console.log("Err %s",err);
+                    console.log("Res %s",res);
+                } );
+                console.log("signed Tx: %s", signedTx);
+
+                const receipt = await web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
+                console.log(receipt)
                 console.log("finished minting")
+                /*
+                web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
+                    .on("receipt", receipt => {
+                        console.log("minted")
+                        console.log(receipt)
+                        event.mintTxHash = receipt.transactionHash
+                        event.status = 'MINTING'
+                        event.save()
+                    })
+                    .on("error", err => {
+                        console.log("On error: %s", err)
+                    })
+                    .catch((err) => {
+                        console.log("Caught error: %s", err)
+                    });
+                    */
+                
+                   
             }
         })
         minterLock = 0

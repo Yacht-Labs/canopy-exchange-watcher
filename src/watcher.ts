@@ -98,3 +98,12 @@ const watcher = async () => {
   setInterval(watcherLoop, 1000)
 }
 watcher()
+
+// TODO: Look into why the following error occurs
+/* 
+(node:1241) UnhandledPromiseRejectionWarning: ParallelSaveError: Can't save() the same doc multiple times in parallel. Document: 6243243e7383adb419896fef
+    at model.Model.save (/Users/henryminden/canopy-exchange-watcher/node_modules/mongoose/lib/model.js:491:20)
+    at Timeout.watcherLoop [as _onTimeout] (/Users/henryminden/canopy-exchange-watcher/dist/src/watcher.js:89:22)
+    at processTicksAndRejections (internal/process/task_queues.js:95:5)
+(Use `node --trace-warnings ...` to show where the warning was created)
+*/
