@@ -34,8 +34,11 @@ const minter = async () => {
         }
 
         let depositEvents = await DepositEvent.find({ status: "NEW" })
+        let locked = false;
         depositEvents.forEach(async event => {
-            // check if tx still exists on origin chain
+            if(!locked){
+                locked = true
+                // check if tx still exists on origin chain
             let tx = await web3Polygon.eth.getTransaction(event.txHash)
             if (!tx) {
                 console.log("failed to find origin tx")
@@ -56,12 +59,12 @@ const minter = async () => {
 
                 const gasPrice = await web3Aurora.eth.getGasPrice();
                 const gasPriceFormatted = web3Aurora.utils.fromWei(gasPrice, 'ether')
-
+                mintContract.handleRevert = true  
                 const tx = {
                     from: DEV_ACCOUNT_ADDRESS, 
                     to: "0x8173cf5551eC2E96489427c4073476b7f33C2b5e", 
-                    gas: "100000000000000",
-                    data: mintContract.methods.mintWithEvent(event.event.from, event.event.amount, event.txHash).encodeABI() 
+                    gas: "10000000000000000",
+                    data: mintContract.methods.mintWithEvent(event.event.from, 50, 5000).encodeABI() 
                 };
                 console.log("Tx: %s", tx);
                 const signedTx = await web3Aurora.eth.accounts.signTransaction(tx, DEV_ACCOUNT_PRIVATE_KEY, (err, res) => {
@@ -70,9 +73,30 @@ const minter = async () => {
                 } );
                 console.log("signed Tx: %s", signedTx);
 
-                const receipt = web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
-                    .once
-                console.log(receipt)
+                try {
+                    web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
+                  //  .on("error", err => {
+                  //      console.log("On error: %s", err)
+                  //  })
+                    .on("receipt", receipt => {
+                        console.log("minted")
+                        console.log(receipt)
+                        //event.mintTxHash = receipt.transactionHash
+                        //event.status = 'MINTING'
+                        //event.save()
+                    })
+                }  catch (e) {
+                    mintContract.methods.mintWithEvent(event.event.from, 50, 5000)
+                        .call({'from': web3Aurora.eth.accounts.privateKeyToAccount(DEV_ACCOUNT_PRIVATE_KEY)}).then(() => {
+                        throw Error ('reverted tx')})
+                        .catch(revertReason => console.log({revertReason}))
+                    
+                }      
+    
+                
+                
+                   
+                
                 console.log("finished minting")
                 /*
                 web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
@@ -90,6 +114,8 @@ const minter = async () => {
                         console.log("Caught error: %s", err)
                     });
                     */
+            }
+            
                 
                    
             }

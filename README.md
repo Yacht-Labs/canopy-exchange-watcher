@@ -18,3 +18,7 @@ To begin using MongoDB, connect mongosh to the running instance. From a new term
 `mongosh`
 
 Copy `.env_local` to `.env` file
+
+Run `npm run build`
+
+Run `node dist/src/checkSchema.js`
