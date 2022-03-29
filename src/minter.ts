@@ -53,9 +53,14 @@ const minter = async () => {
             // call mint() contract on destination chain if MintEvent doesn't exist
             if (!me) {
                 console.log("Starting mint");
+
+                const gasPrice = await web3Aurora.eth.getGasPrice();
+                const gasPriceFormatted = web3Aurora.utils.fromWei(gasPrice, 'ether')
+
                 const tx = {
                     from: DEV_ACCOUNT_ADDRESS, 
-                    to: "0xBB7E929741621944e1D38cF1C8654D8cF34943fc", 
+                    to: "0x8173cf5551eC2E96489427c4073476b7f33C2b5e", 
+                    gas: "100000000000000",
                     data: mintContract.methods.mintWithEvent(event.event.from, event.event.amount, event.txHash).encodeABI() 
                 };
                 console.log("Tx: %s", tx);
@@ -65,7 +70,8 @@ const minter = async () => {
                 } );
                 console.log("signed Tx: %s", signedTx);
 
-                const receipt = await web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
+                const receipt = web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
+                    .once
                 console.log(receipt)
                 console.log("finished minting")
                 /*
@@ -90,6 +96,7 @@ const minter = async () => {
         })
         minterLock = 0
     }
-    setInterval(minterLoop, 1000)
+    //setInterval(minterLoop, 1000)
+    minterLoop()
 }
 minter()

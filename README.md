@@ -1,5 +1,10 @@
 # canopy-exchange-watcher
 
+Install mongo with brew:
+`xcode-select --install`
+`brew tap mongodb/brew`
+`brew install mongodb-community@5.0`
+
 To run MongoDB (i.e. the mongod process) as a macOS service, run:
 `brew services start mongodb-community@5.0`
 
