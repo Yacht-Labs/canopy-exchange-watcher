@@ -60,11 +60,21 @@ const minter = async () => {
                 const gasPrice = await web3Aurora.eth.getGasPrice();
                 const gasPriceFormatted = web3Aurora.utils.fromWei(gasPrice, 'ether')
                 mintContract.handleRevert = true  
+
+                const gasAmount = await mintContract.methods.mintWithEvent(event.event.from, 50, 5000).estimateGas({gas: 5000000});
+                console.log("Gas amount estimate", gasAmount);
+
+                const nonce = await web3Aurora.eth.getTransactionCount(DEV_ACCOUNT_ADDRESS);
+                console.log("Nonce", nonce);
+
                 const tx = {
+                    nonce: nonce,
                     from: DEV_ACCOUNT_ADDRESS, 
                     to: "0x8173cf5551eC2E96489427c4073476b7f33C2b5e", 
-                    gas: "10000000000000000",
-                    data: mintContract.methods.mintWithEvent(event.event.from, 50, 5000).encodeABI() 
+                    gas: gasAmount,
+                    gasPrice: 500000000,
+                    chainId: 1313161555,
+                    data: mintContract.methods.mintWithEvent(event.event.from, 50, 5000).encodeABI()
                 };
                 console.log("Tx: %s", tx);
                 const signedTx = await web3Aurora.eth.accounts.signTransaction(tx, DEV_ACCOUNT_PRIVATE_KEY, (err, res) => {
@@ -73,11 +83,11 @@ const minter = async () => {
                 } );
                 console.log("signed Tx: %s", signedTx);
 
-                try {
+               
                     web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
-                  //  .on("error", err => {
-                  //      console.log("On error: %s", err)
-                  //  })
+                    .on("error", err => {
+                        console.log("On error: %s", err)
+                    })
                     .on("receipt", receipt => {
                         console.log("minted")
                         console.log(receipt)
@@ -85,13 +95,7 @@ const minter = async () => {
                         //event.status = 'MINTING'
                         //event.save()
                     })
-                }  catch (e) {
-                    mintContract.methods.mintWithEvent(event.event.from, 50, 5000)
-                        .call({'from': web3Aurora.eth.accounts.privateKeyToAccount(DEV_ACCOUNT_PRIVATE_KEY)}).then(() => {
-                        throw Error ('reverted tx')})
-                        .catch(revertReason => console.log({revertReason}))
-                    
-                }      
+                   
     
                 
                 
