@@ -1,10 +1,14 @@
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import auroraMint from "./abi/AuroraMint.json";
-import web3Polygon from "./providers/web3Polygon";
+//import web3Polygon from "./providers/web3Polygon";
 import mongoose from "mongoose";
 import "dotenv/config";
 import { ChainStatus, DepositEvent } from "./model";
+
+
+
+const web3Polygon = new Web3('wss://polygon-mumbai.g.alchemy.com/v2/z8rzbsshgvAjR1SpHL8zWgGoHDdBZXFm');
 
 const {
     DATABASE_URL,
@@ -59,11 +63,11 @@ const minter = async () => {
         // check for MintEvent on destination chain with DepositEvent.txHash
         console.log("calling getPastEvents on contract for tx: %s", event.txHash);
         let [mintEvent] = await mintContract.getPastEvents("Mint", {
-            filter: { txHash: web3Polygon.utils.toBN(event.txHash).toString() },
-        });
-        console.log("Me: %s", mintEvent);
-        console.log("Me return values: %s", mintEvent.returnValues);
-        console.log("boolean result: " + !mintEvent)
+            topics: ['0x4e3883c75cc9c752bb1db2e406a822e4a75067ae77ad9a0a4d179f2709b9e1f6', event.txHash],
+        })
+        //console.log("Me: %s", mintEvent);
+        //console.log("Me return values: %s", mintEvent.returnValues);
+        //console.log("boolean result: " + !mintEvent)
         // call mint() contract on destination chain if MintEvent doesn't exist
         if (!mintEvent) {
             console.log("Starting mint");
@@ -102,6 +106,7 @@ const minter = async () => {
             );
             console.log("signed Tx: %s", signedTx);
 
+            
             web3Aurora.eth
                 .sendSignedTransaction(signedTx.rawTransaction)
                 .on("error", (err) => {
@@ -112,16 +117,17 @@ const minter = async () => {
                     console.log({ receipt });
                     minterLock = 0;
                     console.log("MINTING event: " + event)
-                    // event.mintTxHash = receipt.transactionHash;
-                    // event.status = "MINTING";
-                    // event.save();
+                    event.mintTxHash = receipt.transactionHash;
+                    event.status = "MINTING";
+                    event.save();
                 });
+            
             console.log("finished minting");
         } else {
             console.log("mintEvent already minted!")
-            // event.mintTxHash = mintEvent.transactionHash;
-            // event.status = "MINTED";
-            // event.save();
+            event.mintTxHash = mintEvent.transactionHash;
+            event.status = "MINTED";
+            event.save();
             minterLock = 0;
         }
     }

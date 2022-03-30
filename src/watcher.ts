@@ -1,10 +1,12 @@
-import { createAlchemyWeb3 } from "@alch/alchemy-web3";
 import { AbiItem } from "web3-utils";
 import canopyVault from "./abi/CanopyVault.json";
-import web3Polygon from "./providers/web3Polygon";
+//import web3Polygon from "./providers/web3Polygon";
 import mongoose from "mongoose";
 import "dotenv/config";
 import { BlockchainEvent, ChainStatus, DepositEvent } from "./model";
+import Web3 from 'web3';
+
+const web3Polygon = new Web3('wss://polygon-mumbai.g.alchemy.com/v2/z8rzbsshgvAjR1SpHL8zWgGoHDdBZXFm');
 
 const { VAULT_CONTRACT_ADDRESS, CHUNK_SIZE, DATABASE_URL } = process.env;
 
@@ -27,7 +29,7 @@ async function getChainStatus() {
 
 const watcher = async () => {
   let watcherLock = 0;
-
+  
   async function lockWatcher(watcherBlockHeight: number) {
     if (watcherBlockHeight && watcherLock == 0) {
       try {
@@ -48,9 +50,10 @@ const watcher = async () => {
     }
   }
   let cs = await getChainStatus();
-
+  
   async function watcherLoop() {
     let lockStatus = await lockWatcher(cs.watcherBlockHeight);
+    
     if (lockStatus === false) {
       console.log("locked");
       return;
@@ -71,7 +74,7 @@ const watcher = async () => {
       }
     );
     let newRecordsCreated = false;
-
+    
     events.forEach(async (event) => {
       let de = await DepositEvent.findOne({ txHash: event.transactionHash });
       console.log("Deposit Event: ", de);
