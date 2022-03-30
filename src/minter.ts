@@ -40,7 +40,13 @@ const minter = async () => {
             return;
         }
 
-        const event = await DepositEvent.findOne({ status: "NEW" });
+        let event = await DepositEvent.findOne({ status: "NEW" });
+        console.log("found event: " + event)
+        if (!event) {
+            console.log("no more events found!")
+            minterLock = 0;
+            return;
+        }
         // check if tx still exists on origin chain
         let tx = await web3Polygon.eth.getTransaction(event.txHash);
         if (!tx) {
@@ -53,9 +59,11 @@ const minter = async () => {
         // check for MintEvent on destination chain with DepositEvent.txHash
         console.log("calling getPastEvents on contract for tx: %s", event.txHash);
         let [mintEvent] = await mintContract.getPastEvents("Mint", {
-            filter: { txHash: event.txHash },
+            filter: { txHash: web3Polygon.utils.toBN(event.txHash).toString() },
         });
         console.log("Me: %s", mintEvent);
+        console.log("Me return values: %s", mintEvent.returnValues);
+        console.log("boolean result: " + !mintEvent)
         // call mint() contract on destination chain if MintEvent doesn't exist
         if (!mintEvent) {
             console.log("Starting mint");
@@ -103,15 +111,18 @@ const minter = async () => {
                     console.log("minted");
                     console.log({ receipt });
                     minterLock = 0;
-                    event.mintTxHash = receipt.transactionHash;
-                    event.status = "MINTING";
-                    event.save();
+                    console.log("MINTING event: " + event)
+                    // event.mintTxHash = receipt.transactionHash;
+                    // event.status = "MINTING";
+                    // event.save();
                 });
             console.log("finished minting");
         } else {
-            event.mintTxHash = mintEvent.transactionHash;
-            event.status = "MINTING";
-            event.save();
+            console.log("mintEvent already minted!")
+            // event.mintTxHash = mintEvent.transactionHash;
+            // event.status = "MINTED";
+            // event.save();
+            minterLock = 0;
         }
     }
     setInterval(minterLoop, 4000);
