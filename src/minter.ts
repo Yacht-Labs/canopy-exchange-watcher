@@ -5,6 +5,7 @@ import auroraMint from '../abi/AuroraMint.json'
 import mongoose from 'mongoose';
 import 'dotenv/config'
 import { BlockchainEvent, ChainStatus, DepositEvent } from "./model";
+//import { ethers } from "ethers";
 const { DATABASE_URL } = process.env
 const DEV_ACCOUNT_PRIVATE_KEY = "81c7e751ce18f0e39f8881e1d4071ff851d6825988742a0569941049d7a1df38";
 const DEV_ACCOUNT_ADDRESS = "0xc41df6bA129067291F61c7f3dBcad9227E3fba57";
@@ -12,9 +13,11 @@ const DEV_ACCOUNT_ADDRESS = "0xc41df6bA129067291F61c7f3dBcad9227E3fba57";
 var web3Polygon = new Web3('wss://polygon-mumbai.g.alchemy.com/v2/dkKU4lXpEdN0xvwo4-fLyLMvBqB3MzK4');
 var web3Aurora = new Web3("wss://testnet.aurora.dev");
 
-let mintContract = new web3Aurora.eth.Contract(auroraMint.abi as AbiItem[], '0x8173cf5551eC2E96489427c4073476b7f33C2b5e')
+let mintContract = new web3Aurora.eth.Contract(auroraMint.abi as AbiItem[], '0xb9720DA55a64D50f0e0587972127c6E3C2a0f000')
 
 const minter = async () => {
+
+
     let minterLock = 0;
     async function lockMinter() {
         if (minterLock == 0) {
@@ -70,11 +73,11 @@ const minter = async () => {
                 const tx = {
                     nonce: nonce,
                     from: DEV_ACCOUNT_ADDRESS, 
-                    to: "0x8173cf5551eC2E96489427c4073476b7f33C2b5e", 
-                    gas: gasAmount,
-                    gasPrice: 500000000,
+                    to: "0xb9720DA55a64D50f0e0587972127c6E3C2a0f000", 
+                    gas: 1817240,
+                    gasPrice: 10,
                     chainId: 1313161555,
-                    data: mintContract.methods.mintWithEvent(event.event.from, 50, 5000).encodeABI()
+                    data: mintContract.methods.mintWithEvent(event.event.from, 69, BigInt(event.event.txHash)).encodeABI()
                 };
                 console.log("Tx: %s", tx);
                 const signedTx = await web3Aurora.eth.accounts.signTransaction(tx, DEV_ACCOUNT_PRIVATE_KEY, (err, res) => {
@@ -83,7 +86,6 @@ const minter = async () => {
                 } );
                 console.log("signed Tx: %s", signedTx);
 
-               
                     web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
                     .on("error", err => {
                         console.log("On error: %s", err)
@@ -91,33 +93,14 @@ const minter = async () => {
                     .on("receipt", receipt => {
                         console.log("minted")
                         console.log(receipt)
-                        //event.mintTxHash = receipt.transactionHash
-                        //event.status = 'MINTING'
-                        //event.save()
-                    })
-                   
-    
-                
-                
-                   
-                
-                console.log("finished minting")
-                /*
-                web3Aurora.eth.sendSignedTransaction(signedTx.rawTransaction)
-                    .on("receipt", receipt => {
-                        console.log("minted")
-                        console.log(receipt)
+
                         event.mintTxHash = receipt.transactionHash
                         event.status = 'MINTING'
                         event.save()
                     })
-                    .on("error", err => {
-                        console.log("On error: %s", err)
-                    })
-                    .catch((err) => {
-                        console.log("Caught error: %s", err)
-                    });
-                    */
+                   console.log("finished minting")
+                
+                
             }
             
                 
