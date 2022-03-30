@@ -7,28 +7,31 @@
 
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
+import "dotenv/config";
+import canopyVault from "./abi/CanopyVault.json";
+import auroraMint from "./abi/AuroraMint.json";
+const {
+  POLYGON_PROVIDER,
+  AURORA_PROVIDER,
+  AURORA_PRIVATE_KEY,
+  VAULT_CONTRACT_ADDRESS,
+  MINT_CONTRACT_ADDRESS,
+} = process.env;
+var web3Polygon = new Web3(POLYGON_PROVIDER);
+var web3Aurora = new Web3(AURORA_PROVIDER);
 
-import canopyVault from "../abi/CanopyVault.json";
-import auroraMint from "../abi/AuroraMint.json";
-var web3Polygon = new Web3(
-  "wss://polygon-mumbai.g.alchemy.com/v2/dkKU4lXpEdN0xvwo4-fLyLMvBqB3MzK4"
-);
-var web3Aurora = new Web3("wss://testnet.aurora.dev");
-
-const DEV_ACCOUNT_PRIVATE_KEY =
-  "81c7e751ce18f0e39f8881e1d4071ff851d6825988742a0569941049d7a1df38";
 const { abi: canopyAbi } = canopyVault;
 const vaultContract = new web3Polygon.eth.Contract(
   canopyVault.abi as AbiItem[],
-  "0x0e8DEF110b1fC3F649ebCd21871E8bfb2f14244D"
+  VAULT_CONTRACT_ADDRESS
 );
 const mintContract = new web3Aurora.eth.Contract(
   auroraMint.abi as AbiItem[],
-  "0x22fF3411a761E1B795BE66902DEC86B7AA405444"
+  MINT_CONTRACT_ADDRESS
 );
-const auroraAccount = web3Aurora.eth.accounts.privateKeyToAccount(
-  DEV_ACCOUNT_PRIVATE_KEY
-);
+
+const auroraAccount =
+  web3Aurora.eth.accounts.privateKeyToAccount(AURORA_PRIVATE_KEY);
 
 let vaultOptions = {
   filter: {
@@ -54,7 +57,7 @@ async function processDeposit(event) {
   console.log(nonce);
   let signedTx = await auroraAccount.signTransaction({
     nonce: nonce,
-    to: "0x22fF3411a761E1B795BE66902DEC86B7AA405444",
+    to: MINT_CONTRACT_ADDRESS,
     data: encodedABI,
     gas: 2000000,
     chainId: 1313161555,
