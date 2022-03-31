@@ -1,26 +1,16 @@
-import { AbiItem } from "web3-utils";
-import canopyVault from "./abi/CanopyVault.json";
-//import web3Polygon from "./providers/web3Polygon";
+import { web3Polygon } from "./providers";
+import { vaultContract } from "./contracts";
 import mongoose from "mongoose";
 import "dotenv/config";
-import { BlockchainEvent, ChainStatus, DepositEvent } from "./model";
-import Web3 from 'web3';
+import { BlockchainEvent, ChainStatus, DepositEvent } from "./model/model";
 
-const web3Polygon = new Web3('wss://polygon-mumbai.g.alchemy.com/v2/z8rzbsshgvAjR1SpHL8zWgGoHDdBZXFm');
-
-const { VAULT_CONTRACT_ADDRESS, CHUNK_SIZE, DATABASE_URL } = process.env;
-
-const vaultContract = new web3Polygon.eth.Contract(
-  canopyVault.abi as AbiItem[],
-  VAULT_CONTRACT_ADDRESS
-);
+const { CHUNK_SIZE, DATABASE_URL } = process.env;
 
 mongoose.connect(DATABASE_URL);
 
 async function getChainStatus() {
   try {
-    let res = await ChainStatus.find();
-    return res[0];
+    return await ChainStatus.find()[0];
   } catch (err) {
     console.error("Error fetching DB Chain Status", err);
     return;
@@ -29,7 +19,7 @@ async function getChainStatus() {
 
 const watcher = async () => {
   let watcherLock = 0;
-  
+
   async function lockWatcher(watcherBlockHeight: number) {
     if (watcherBlockHeight && watcherLock == 0) {
       try {
@@ -50,15 +40,12 @@ const watcher = async () => {
     }
   }
   let cs = await getChainStatus();
-  
+
   async function watcherLoop() {
     let lockStatus = await lockWatcher(cs.watcherBlockHeight);
-    
+
     if (lockStatus === false) {
       console.log("locked");
-      return;
-    }
-    if (!lockStatus) {
       return;
     }
     // TODO: Handle case where more than 10,000 events are created within 100 blocks
@@ -69,12 +56,14 @@ const watcher = async () => {
         fromBlock: cs.watcherBlockHeight,
         toBlock: cs.watcherBlockHeight + parseInt(CHUNK_SIZE) - 1,
       },
-      function (error, events) {
-        if (error) console.log(error);
+      function (err) {
+        if (err) {
+          console.error("Error getting past events on origin chain: ", err);
+        }
       }
     );
     let newRecordsCreated = false;
-    
+
     events.forEach(async (event) => {
       let de = await DepositEvent.findOne({ txHash: event.transactionHash });
       console.log("Deposit Event: ", de);
@@ -121,12 +110,3 @@ const watcher = async () => {
   setInterval(watcherLoop, 500);
 };
 watcher();
-
-// TODO: Look into why the following error occurs
-/* 
-(node:1241) UnhandledPromiseRejectionWarning: ParallelSaveError: Can't save() the same doc multiple times in parallel. Document: 6243243e7383adb419896fef
-    at model.Model.save (/Users/henryminden/canopy-exchange-watcher/node_modules/mongoose/lib/model.js:491:20)
-    at Timeout.watcherLoop [as _onTimeout] (/Users/henryminden/canopy-exchange-watcher/dist/src/watcher.js:89:22)
-    at processTicksAndRejections (internal/process/task_queues.js:95:5)
-(Use `node --trace-warnings ...` to show where the warning was created)
-*/
