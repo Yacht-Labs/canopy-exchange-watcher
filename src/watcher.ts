@@ -118,7 +118,7 @@ const watcher = async () => {
     console.log("Events: ", events);
     watcherLock = 0;
   }
-  setInterval(watcherLoop, 4000);
+  setInterval(watcherLoop, 500);
 };
 watcher();
 
