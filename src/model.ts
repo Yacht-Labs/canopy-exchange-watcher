@@ -34,6 +34,7 @@ DepositEventSchema.add({
     enum: ["NEW", "MINTING", "MINTED", "DEPOSIT_FAILED", "MINT_FAILED"],
   },
   event: BlockchainEventSchema,
+  mintConfirmRetries: Number
 });
 
 export const ChainStatus = mongoose.model("ChainStatus", ChainStatusSchema);

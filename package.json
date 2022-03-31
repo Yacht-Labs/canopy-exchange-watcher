@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "watcher": "nodemon ./src/watcher.ts",
-    "minter": "nodemon ./src/minter.ts"
+    "minter": "nodemon ./src/minter.ts",
+    "mintconfirmer": "nodemon ./src/mintconfirmer.ts"
   },
   "keywords": [],
   "author": "",

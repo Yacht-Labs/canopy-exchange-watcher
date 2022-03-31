@@ -6,8 +6,6 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import { ChainStatus, DepositEvent } from "./model";
 
-
-
 const web3Polygon = new Web3('wss://polygon-mumbai.g.alchemy.com/v2/z8rzbsshgvAjR1SpHL8zWgGoHDdBZXFm');
 
 const {
