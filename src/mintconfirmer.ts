@@ -24,16 +24,18 @@ const mintConfirmer = async () => {
 
     await mongoose.connect(DATABASE_URL);
 
-    async function mintConfirmerLoop() {
-        let minterConfirmerLock = 0;
-        async function lockMinter() {
-            if (minterConfirmerLock == 0) {
-                minterConfirmerLock = 1;
-                return true;
-            } else {
-                return false;
-            }
+    let minterConfirmerLock = 0;
+    async function lockMinter() {
+        if (minterConfirmerLock == 0) {
+            minterConfirmerLock = 1;
+            return true;
+        } else {
+            return false;
         }
+    }
+
+    async function mintConfirmerLoop() {
+        
         let locked = await lockMinter();
         if (locked === false) {
             console.log("locked");
@@ -46,7 +48,7 @@ const mintConfirmer = async () => {
             console.log("no more events found!")
             return;
         }
-
+        console.log("txHash " + event.txHash)
         let [mintEvent] = await mintContract.getPastEvents("Mint", {
             topics: ['0x4e3883c75cc9c752bb1db2e406a822e4a75067ae77ad9a0a4d179f2709b9e1f6', event.txHash],
         });
