@@ -1,4 +1,4 @@
-import { web3Polygon, web3Aurora } from "./providers";
+import { web3Origin, web3Destination } from "./providers";
 import { mintContract } from "./contracts";
 import mongoose from "mongoose";
 import "dotenv/config";
@@ -6,8 +6,8 @@ import { DepositEvent } from "./model/model";
 
 const {
   DATABASE_URL,
-  AURORA_PRIVATE_KEY,
-  AURORA_PUBLIC_KEY,
+  DESTINATION_PRIVATE_KEY,
+  DESTINATION_PUBLIC_KEY,
   MINT_CONTRACT_ADDRESS,
 } = process.env;
 
@@ -38,7 +38,7 @@ const minter = async () => {
     }
     console.log("Found Deposit Event: " + event);
     // check if tx still exists on origin chain
-    const tx = await web3Polygon.eth.getTransaction(event.txHash);
+    const tx = await web3Origin.eth.getTransaction(event.txHash);
     if (!tx) {
       console.error("Failed to find origin chain tx");
       event.status = "DEPOSIT_FAILED";
@@ -57,8 +57,11 @@ const minter = async () => {
     if (!mintEvent) {
       console.log("Starting mint");
 
-      const gasPrice = await web3Aurora.eth.getGasPrice();
-      const gasPriceFormatted = web3Aurora.utils.fromWei(gasPrice, "ether");
+      const gasPrice = await web3Destination.eth.getGasPrice();
+      const gasPriceFormatted = web3Destination.utils.fromWei(
+        gasPrice,
+        "ether"
+      );
       mintContract.handleRevert = true;
 
       const gasAmount = await mintContract.methods
@@ -66,12 +69,14 @@ const minter = async () => {
         .estimateGas({ gas: 5000000 });
       console.log("Gas amount estimate", gasAmount);
 
-      const nonce = await web3Aurora.eth.getTransactionCount(AURORA_PUBLIC_KEY);
+      const nonce = await web3Destination.eth.getTransactionCount(
+        DESTINATION_PUBLIC_KEY
+      );
       console.log("Nonce", nonce);
 
       const tx = {
         nonce: nonce,
-        from: AURORA_PUBLIC_KEY,
+        from: DESTINATION_PUBLIC_KEY,
         to: MINT_CONTRACT_ADDRESS,
         gas: 1817240,
         gasPrice: 10,
@@ -85,16 +90,16 @@ const minter = async () => {
           .encodeABI(),
       };
       console.log("Mint Transaction Data: ", tx);
-      const signedTx = await web3Aurora.eth.accounts.signTransaction(
+      const signedTx = await web3Destination.eth.accounts.signTransaction(
         tx,
-        AURORA_PRIVATE_KEY,
+        DESTINATION_PRIVATE_KEY,
         (err, res) => {
           console.error("Error signing mint transaction: ", err);
           console.log("Signed Mint Transaction: ", res);
         }
       );
 
-      web3Aurora.eth
+      web3Destination.eth
         .sendSignedTransaction(signedTx.rawTransaction)
         .on("error", (err) => {
           console.log("Error minting on destination chain: ", err);

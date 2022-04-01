@@ -8,7 +8,7 @@
     "watcher": "nodemon ./src/watcher.ts",
     "minter": "nodemon ./src/minter.ts",
     "mintconfirmer": "nodemon ./src/mintconfirmer.ts",
-    "checkSchema": "node ./dist/model/checkSchema.js"
+    "checkSchema": "node ./dist/src/model/checkSchema.js"
   },
   "keywords": [],
   "author": "",
