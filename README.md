@@ -33,11 +33,11 @@ The canopy exchange bridge system allows a user to transfer a token from an orig
 
 A bridge service is responsible for watching the origin chain for deposit events and then sending the appropriate mint transactions to the destination chain when a deposit occurs. 
 
-### Bridge Service 
+## Bridge Service 
 
 The canopy exchange bridge service is comprised of three ts-node sub-services: the watcher, the minter, and the mint confirmer. These services are connected to one mongo database for state persistence.  All three services utilize an event loop pattern.
 
-##### The Watcher
+### The Watcher
 
 ![Watcher Diagram](https://github.com/jeevanmaathur/canopy-exchange-watcher/blob/main/media/watcherDiagram.png)
 
@@ -47,7 +47,7 @@ Then the web3 getPastEvents method queries vault contract for all Deposit events
 
 Once this loop completes without creating any new DepositEvents, the current watcherBlockHeight is incremented by CHUNK_SIZE. This ensures that all DepositEvents in the current block range of the loop were successfully saved to the database.
 
-##### The Minter
+### The Minter
 
 ![Minter Diagram](https://github.com/jeevanmaathur/canopy-exchange-watcher/blob/main/media/minterDiagram.png)
 
@@ -59,7 +59,7 @@ It typically should not find any matching Mint events since the status is new. I
 
 In the edge case that it does find a matching Mint event for the NEW DepositEvent, it means the transaction was minted but the status didn't get updated in the database. In that case we update the DepositEvent as MINTED and the bridge operation is complete for that DepositEvent. 
 
-##### The Mint Confirmer
+### The Mint Confirmer
 
 ![Mint Confirmer Diagram](https://github.com/jeevanmaathur/canopy-exchange-watcher/blob/main/media/mintConfirmerDiagram.png)
 
