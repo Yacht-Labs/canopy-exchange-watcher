@@ -11,12 +11,12 @@ const {
   MINT_CONTRACT_ADDRESS,
   GAS,
   GAS_PRICE,
-  CHAIN_ID,
+  DESTINATION_CHAIN_ID,
 } = process.env;
 
 const gas = parseInt(GAS);
 const gasPrice = parseInt(GAS_PRICE);
-const chainId = parseInt(CHAIN_ID);
+const chainId = parseInt(DESTINATION_CHAIN_ID);
 
 const minter = async () => {
   let minterLock = 0;
@@ -39,7 +39,7 @@ const minter = async () => {
 
     const event = await DepositEvent.findOne({ status: "NEW" });
     if (!event) {
-      console.log("no more events found!");
+      console.log("No events found");
       minterLock = 0;
       return;
     }
@@ -64,11 +64,6 @@ const minter = async () => {
     if (!mintEvent) {
       console.log("Starting mint");
 
-      const gasPrice = await web3Destination.eth.getGasPrice();
-      const gasPriceFormatted = web3Destination.utils.fromWei(
-        gasPrice,
-        "ether"
-      );
       mintContract.handleRevert = true;
 
       const gasAmount = await mintContract.methods

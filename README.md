@@ -38,6 +38,9 @@ Run `node run checkSchema`
 - `MINT_CONTRACT_ADDRESS` = Address for the mint contract on the destination chain
 - `ORIGIN_CHAIN_BLOCK_HEIGHT` = Blockheight that the vault contract was deployed at
 - `CHUNK_SIZE` = How many blocks to increment by after searching through events in the last chunk
+- `GAS` = The amount of gas your vault contract will use to mint;
+- `GAS_PRICE` = Variable gas price;
+- `DESTINATION_CHAIN_ID` = Chain ID for your destination;
 
 ## Architecture Overview
 
