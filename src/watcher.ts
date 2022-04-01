@@ -1,4 +1,4 @@
-import { web3Polygon } from "./providers";
+import { web3Origin } from "./providers";
 import { vaultContract } from "./contracts";
 import mongoose from "mongoose";
 import "dotenv/config";
@@ -23,7 +23,7 @@ const watcher = async () => {
   async function lockWatcher(watcherBlockHeight: number) {
     if (watcherBlockHeight && watcherLock == 0) {
       try {
-        const blockNumber = await web3Polygon.eth.getBlockNumber();
+        const blockNumber = await web3Origin.eth.getBlockNumber();
         const diff = blockNumber - watcherBlockHeight;
         if (diff > parseInt(CHUNK_SIZE) - 1) {
           watcherLock = 1;
@@ -48,8 +48,6 @@ const watcher = async () => {
       console.log("locked");
       return;
     }
-    // TODO: Handle case where more than 10,000 events are created within 100 blocks
-    // TODO: Add more robust error handling
     let events = await vaultContract.getPastEvents(
       "Deposit",
       {
@@ -76,7 +74,6 @@ const watcher = async () => {
           blockNumber: event.blockNumber,
           logIndex: event.logIndex,
           // TODO: handle event.removed
-          // removed: event.removed,
           txHash: event.transactionHash,
           transactionIndex: event.transactionIndex,
           from: event.returnValues.from,
@@ -101,7 +98,6 @@ const watcher = async () => {
     if (!newRecordsCreated) {
       cs.watcherBlockHeight = cs.watcherBlockHeight + parseInt(CHUNK_SIZE);
       await cs.save();
-      // cs.update({watcherBlockHeight: cs.watcherBlockHeight + parseIntCHUNK_SIZE})
     }
 
     console.log("Events: ", events);
