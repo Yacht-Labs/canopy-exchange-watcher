@@ -2,6 +2,7 @@ import { web3Destination, web3Origin } from "../providers";
 import canopyVault from "../abis/CanopyVault.json";
 import auroraMint from "../abis/AuroraMint.json";
 import { AbiItem } from "web3-utils";
+import "dotenv/config";
 
 const { VAULT_CONTRACT_ADDRESS, MINT_CONTRACT_ADDRESS } = process.env;
 

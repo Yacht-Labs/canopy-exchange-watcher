@@ -1,4 +1,5 @@
 import Web3 from "web3";
+import "dotenv/config";
 
 const { ORIGIN_PROVIDER, DESTINATION_PROVIDER } = process.env;
 

@@ -21,11 +21,14 @@ async function checkSchema() {
       try {
         await chainStatus.save();
         console.log("saved");
+        process.exit(0);
       } catch (err) {
         console.error("Error creating new ChainStatus document: ", err);
+        process.exit(1);
       }
     }
   } catch (err) {
     console.error("Error connecting to database: ", err);
+    process.exit(1);
   }
 }

@@ -9,7 +9,14 @@ const {
   DESTINATION_PRIVATE_KEY,
   DESTINATION_PUBLIC_KEY,
   MINT_CONTRACT_ADDRESS,
+  GAS,
+  GAS_PRICE,
+  CHAIN_ID,
 } = process.env;
+
+const gas = parseInt(GAS);
+const gasPrice = parseInt(GAS_PRICE);
+const chainId = parseInt(CHAIN_ID);
 
 const minter = async () => {
   let minterLock = 0;
@@ -78,9 +85,9 @@ const minter = async () => {
         nonce: nonce,
         from: DESTINATION_PUBLIC_KEY,
         to: MINT_CONTRACT_ADDRESS,
-        gas: 1817240,
-        gasPrice: 10,
-        chainId: 1313161555,
+        gas: gas,
+        gasPrice: gasPrice,
+        chainId: chainId,
         data: mintContract.methods
           .mintWithEvent(
             event.event.from,

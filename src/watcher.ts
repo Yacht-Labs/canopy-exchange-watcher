@@ -6,11 +6,10 @@ import { BlockchainEvent, ChainStatus, DepositEvent } from "./model/model";
 
 const { CHUNK_SIZE, DATABASE_URL } = process.env;
 
-mongoose.connect(DATABASE_URL);
-
 async function getChainStatus() {
   try {
-    return await ChainStatus.find()[0];
+    const status = await ChainStatus.find();
+    return status[0];
   } catch (err) {
     console.error("Error fetching DB Chain Status", err);
     return;
@@ -18,15 +17,16 @@ async function getChainStatus() {
 }
 
 const watcher = async () => {
-  let watcherLock = 0;
+  let isWatcherLocked = false;
+  mongoose.connect(DATABASE_URL);
 
-  async function lockWatcher(watcherBlockHeight: number) {
-    if (watcherBlockHeight && watcherLock == 0) {
+  async function shouldCheckForEvents(watcherBlockHeight: number) {
+    if (watcherBlockHeight && !isWatcherLocked) {
       try {
+        await web3Origin.eth.getBlockNumber();
         const blockNumber = await web3Origin.eth.getBlockNumber();
-        const diff = blockNumber - watcherBlockHeight;
-        if (diff > parseInt(CHUNK_SIZE) - 1) {
-          watcherLock = 1;
+        if (blockNumber - watcherBlockHeight > parseInt(CHUNK_SIZE) - 1) {
+          isWatcherLocked = true;
           return true;
         } else {
           return false;
@@ -39,12 +39,13 @@ const watcher = async () => {
       return false;
     }
   }
-  let cs = await getChainStatus();
 
   async function watcherLoop() {
-    let lockStatus = await lockWatcher(cs.watcherBlockHeight);
+    let cs = await getChainStatus();
 
-    if (lockStatus === false) {
+    let shouldCheck = await shouldCheckForEvents(cs.watcherBlockHeight);
+
+    if (!shouldCheck) {
       console.log("locked");
       return;
     }
@@ -101,8 +102,8 @@ const watcher = async () => {
     }
 
     console.log("Events: ", events);
-    watcherLock = 0;
+    isWatcherLocked = false;
   }
-  setInterval(watcherLoop, 500);
+  setInterval(watcherLoop, 4000);
 };
 watcher();
